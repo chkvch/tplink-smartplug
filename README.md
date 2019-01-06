@@ -1,3 +1,17 @@
+# Quickstart
+
+Get device info:
+
+  `./tplink_smartplug.py -t 192.168.1.31 -c info`
+
+Get cloud connection info:
+
+  `./tplink_smartplug.py -t 192.168.1.31 -c cloudinfo`
+
+Set cloud address to trusted location:
+
+  `./tplink_smartplug.py -t 192.168.1.31 -j '{"cnCloud":{"set_server_url":{"server":"192.168.1.111"}}}'`
+
 # TP-Link WiFi SmartPlug Client and Wireshark Dissector
 
 For the full story, see [Reverse Engineering the TP-Link HS110](https://www.softscheck.com/en/reverse-engineering-tp-link-hs110/)
@@ -5,7 +19,7 @@ For the full story, see [Reverse Engineering the TP-Link HS110](https://www.soft
 ## tplink_smartplug.py ##
 
 A python client for the proprietary TP-Link Smart Home protocol to control TP-Link HS100 and HS110 WiFi Smart Plugs.
-The SmartHome protocol runs on TCP port 9999 and uses a trivial XOR autokey encryption that provides no security. 
+The SmartHome protocol runs on TCP port 9999 and uses a trivial XOR autokey encryption that provides no security.
 
 There is no authentication mechanism and commands are accepted independent of device state (configured/unconfigured).
 
