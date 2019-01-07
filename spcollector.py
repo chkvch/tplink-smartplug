@@ -87,4 +87,4 @@ class smartplug:
 
 			return result
 		except socket.error:
-			logerr("Could not connect to host " + self.ip + ":" + str(port))
+			raise ValueError("Could not connect to host {}:{}".format(self.ip,str(port)))

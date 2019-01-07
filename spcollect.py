@@ -6,18 +6,18 @@ import os
 
 # sp1 = spcollector.smartplug('192.168.1.112')
 # sp2 = spcollector.smartplug('192.168.1.113')
-targets = '192.168.1.112', '192.168.1.113', 'banana'
+# targets = '192.168.1.112', '192.168.1.113', 'banana'
+targets = '192.168.1.113',
 
 # for sp in sp1, sp2:
 for target in targets:
     try:
         sp = spcollector.smartplug(target)
-    except ValueError:
-        spcollector.logerr('no destination {}'.format(target))
+        energy_ = sp.do('energy') # str
+        #info_ = sp.do('info') # str
+    except ValueError, e:
+        spcollector.logerr(str(e))
         continue
-
-    energy_ = sp.do('energy') # str
-    #info_ = sp.do('info') # str
 
     current = energy_.split('current')[1].split('voltage')[0][2:-2]
     voltage = energy_.split('voltage')[1].split('power')[0][2:-2]
