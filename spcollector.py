@@ -17,11 +17,11 @@ def logerr(msg):
     logmsg(syslog.LOG_ERR, msg)
 
 def validHostname(hostname):
-	try:
-		socket.gethostbyname(hostname)
-	except socket.error:
-		logerr("Invalid hostname {}.".format(hostname))
-	return hostname
+    try:
+        socket.gethostbyname(hostname)
+        return hostname
+    except socket.error:
+        raise ValueError('no destination {}'.format(hostname))
 
 # Encryption and Decryption of TP-Link Smart Home Protocol
 # XOR Autokey Cipher with starting key = 171
@@ -46,8 +46,8 @@ def decrypt(string):
 class smartplug:
 
 	def __init__(self, target):
-		assert validHostname(target), 'asdf'
-		self.ip = target
+
+		self.ip = validHostname(target)
 
 		# Predefined Smart Plug Commands
 		# For a full list of commands, consult tplink-smarthome-commands.txt
@@ -87,4 +87,4 @@ class smartplug:
 
 			return result
 		except socket.error:
-			logerr("Could not connect to host " + ip + ":" + str(port))
+			logerr("Could not connect to host " + self.ip + ":" + str(port))
