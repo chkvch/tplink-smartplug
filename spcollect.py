@@ -1,4 +1,4 @@
-#!/anaconda/bin/python
+#!/usr/bin/python
 import spcollector
 import time
 import pickle
@@ -10,7 +10,7 @@ sp2 = spcollector.smartplug('192.168.1.113')
 for sp in sp1, sp2:
 
     energy_ = sp.do('energy') # str
-    info_ = sp.do('info') # str
+    #info_ = sp.do('info') # str
 
     current = energy_.split('current')[1].split('voltage')[0][2:-2]
     voltage = energy_.split('voltage')[1].split('power')[0][2:-2]
