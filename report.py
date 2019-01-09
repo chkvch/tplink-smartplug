@@ -80,7 +80,7 @@ class reporter:
         # print(info)
         # logdbg(info)
         #
-        # ax[0].set_title(info)
+        ax[0].set_title('{}, last 27 hours'.format(description))
 
         outfile = 'daily_{}.png'.format(alias)
         plt.savefig(outfile, bbox_inches='tight')
