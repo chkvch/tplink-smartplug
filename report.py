@@ -52,12 +52,13 @@ for address in '192.168.1.112', '192.168.1.113':
     time0 = datetime.utcfromtimestamp(int(history['time'][0]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
     time1 = datetime.utcfromtimestamp(int(history['time'][-1]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
 
-    print('{} records from {} to {}'.format(len(history['time']), time0, time1))
-
     description = {'192.168.1.113':'First floor furnace', '192.168.1.112':'Attic furnace'}[address]
     alias = {'192.168.1.113':'GroundFloor', '192.168.1.112':'Attic'}[address]
 
-    ax[0].set_title('{}: {} to {}'.format(description, time0, time1))
+    info = '{}: {} records from {} to {}'.format(description, len(history['time']), time0, time1)
+    print(info)
+    logdbg(info)
+    ax[0].set_title(info)
     #plt.savefig('history_test.pdf', bbox_inches='tight')
     outfile = '/home/pi/tplink-smartplug/history_{}.png'.format(alias)
     plt.savefig(outfile, bbox_inches='tight')
