@@ -4,12 +4,8 @@ import time
 import pickle
 import os
 
-# sp1 = spcollector.smartplug('192.168.1.112')
-# sp2 = spcollector.smartplug('192.168.1.113')
-# targets = '192.168.1.112', '192.168.1.113', 'banana'
-targets = '192.168.1.113',
+targets = '192.168.1.113','192.168.1.112'
 
-# for sp in sp1, sp2:
 for target in targets:
     try:
         sp = spcollector.smartplug(target)
