@@ -62,6 +62,6 @@ for address in '192.168.1.112', '192.168.1.113':
     outfile = '/home/pi/tplink-smartplug/history_{}.png'.format(alias)
     plt.savefig(outfile, bbox_inches='tight')
 
-    os.system('sudo cp {} /var/www/html/power/history_{}.png'.format(alias))
+    os.system('sudo cp {} /var/www/html/power/history_{}.png'.format(outfile, alias))
 
 os.system('sudo touch /var/www/html/power/index.html')
