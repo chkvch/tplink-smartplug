@@ -42,7 +42,7 @@ class reporter:
         self.outdir = os.environ['POWER_HTML_ROOT']
         self.ip = ip
 
-    def day(self):
+    def daily(self):
 
         # x_label_format = %I:%M %p
         # bottom_label_format = %x %X
@@ -54,11 +54,11 @@ class reporter:
         mask = self.history['time'][-1] - self.history['time'] < window
 
         kwargs = {'linestyle':'-', 'lw':1, 'marker':'o', 'markersize':2}
-        ax[0].plot(self.history['time'][mask, self.history['current'][mask], **kwargs)
-        ax[1].plot(self.history['time'][mask, self.history['voltage'][mask], **kwargs)
-        ax[2].plot(self.history['time'][mask, self.history['power'][mask], **kwargs)
-        ax[3].plot(self.history['time'][mask, self.history['total'][mask] - self.history['total'][0], **kwargs)
-        ax[3].plot(self.history['time'][mask, self.history['integrated_power'][mask], **kwargs)
+        ax[0].plot(self.history['time'][mask], self.history['current'][mask], **kwargs)
+        ax[1].plot(self.history['time'][mask], self.history['voltage'][mask], **kwargs)
+        ax[2].plot(self.history['time'][mask], self.history['power'][mask], **kwargs)
+        ax[3].plot(self.history['time'][mask], self.history['total'][mask] - self.history['total'][0], **kwargs)
+        ax[3].plot(self.history['time'][mask], self.history['integrated_power'][mask], **kwargs)
 
         ax[0].set_ylabel(self.label['current'])
         ax[1].set_ylabel(self.label['voltage'])
@@ -70,11 +70,11 @@ class reporter:
         # time0 = datetime.utcfromtimestamp(int(self.history['time'][0]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
         # time1 = datetime.utcfromtimestamp(int(self.history['time'][-1]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
         #
-        # try:
-        #     description = {'192.168.1.113':'First floor furnace', '192.168.1.112':'Attic furnace'}[self.ip]
-        #     alias = {'192.168.1.113':'GroundFloor', '192.168.1.112':'Attic'}[self.ip]
-        # except KeyError:
-        #     description = alias = 'undefined'
+        try:
+            description = {'192.168.1.113':'First floor furnace', '192.168.1.112':'Attic furnace'}[self.ip]
+            alias = {'192.168.1.113':'GroundFloor', '192.168.1.112':'Attic'}[self.ip]
+        except KeyError:
+            description = alias = 'undefined'
         #
         # info = '{}: {} records from {} to {}'.format(description, len(self.history['time']), time0, time1)
         # print(info)
@@ -117,4 +117,4 @@ class reporter:
 if __name__ == '__main__':
     for address in '192.168.1.112', '192.168.1.113':
         r = reporter(address)
-        r.alltime()
+        r.daily()
