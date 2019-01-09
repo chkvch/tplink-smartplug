@@ -42,16 +42,23 @@ class reporter:
         self.outdir = os.environ['POWER_HTML_ROOT']
         self.ip = ip
 
-    def alltime(self):
+    def day(self):
+
+        # x_label_format = %I:%M %p
+        # bottom_label_format = %x %X
+        # time_length = 97200    # == 27 hours
 
         fig, ax = plt.subplots(4, 1, figsize=(15, 10), sharex=True)
 
+        window = 97200
+        mask = self.history['time'][-1] - self.history['time'] < window
+
         kwargs = {'linestyle':'-', 'lw':1, 'marker':'o', 'markersize':2}
-        ax[0].plot(self.history['time'], self.history['current'], **kwargs)
-        ax[1].plot(self.history['time'], self.history['voltage'], **kwargs)
-        ax[2].plot(self.history['time'], self.history['power'], **kwargs)
-        ax[3].plot(self.history['time'], self.history['total'] - self.history['total'][0], **kwargs)
-        ax[3].plot(self.history['time'], self.history['integrated_power'], **kwargs)
+        ax[0].plot(self.history['time'][mask, self.history['current'][mask], **kwargs)
+        ax[1].plot(self.history['time'][mask, self.history['voltage'][mask], **kwargs)
+        ax[2].plot(self.history['time'][mask, self.history['power'][mask], **kwargs)
+        ax[3].plot(self.history['time'][mask, self.history['total'][mask] - self.history['total'][0], **kwargs)
+        ax[3].plot(self.history['time'][mask, self.history['integrated_power'][mask], **kwargs)
 
         ax[0].set_ylabel(self.label['current'])
         ax[1].set_ylabel(self.label['voltage'])
@@ -59,39 +66,52 @@ class reporter:
         ax[3].set_ylabel(self.label['total'])
         ax[-1].set_xlabel(self.label['time'])
 
-        # minus 8 converts to PST
-        #date = datetime.utcfromtimestamp(int(history['time'][0]) - 8 * 3600).strftime('%Y-%m-%d')
-        time0 = datetime.utcfromtimestamp(int(self.history['time'][0]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
-        time1 = datetime.utcfromtimestamp(int(self.history['time'][-1]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
+        # # minus 8 converts to PST
+        # time0 = datetime.utcfromtimestamp(int(self.history['time'][0]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
+        # time1 = datetime.utcfromtimestamp(int(self.history['time'][-1]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
+        #
+        # try:
+        #     description = {'192.168.1.113':'First floor furnace', '192.168.1.112':'Attic furnace'}[self.ip]
+        #     alias = {'192.168.1.113':'GroundFloor', '192.168.1.112':'Attic'}[self.ip]
+        # except KeyError:
+        #     description = alias = 'undefined'
+        #
+        # info = '{}: {} records from {} to {}'.format(description, len(self.history['time']), time0, time1)
+        # print(info)
+        # logdbg(info)
+        #
+        # ax[0].set_title(info)
 
-        try:
-            description = {'192.168.1.113':'First floor furnace', '192.168.1.112':'Attic furnace'}[self.ip]
-            alias = {'192.168.1.113':'GroundFloor', '192.168.1.112':'Attic'}[self.ip]
-        except KeyError:
-            description = alias = 'undefined'
-
-        info = '{}: {} records from {} to {}'.format(description, len(self.history['time']), time0, time1)
-        print(info)
-        logdbg(info)
-
-        ax[0].set_title(info)
-        #plt.savefig('history_test.pdf', bbox_inches='tight')
-        outfile = 'history_{}.png'.format(alias)
+        outfile = 'daily_{}.png'.format(alias)
         plt.savefig(outfile, bbox_inches='tight')
 
-        os.system('sudo cp {} {}/history_{}.png'.format(outfile, self.outdir, alias))
+        os.system('sudo cp {} {}/daily_{}.png'.format(outfile, self.outdir, alias))
         os.system('sudo touch {}/index.html'.format(self.outdir))
 
-    def daily(self):
-        pass
-
     def weekly(self):
+        # x_label_format = %a %b %d
+        # bottom_label_format = %x %X
+        # time_length = 604800    # == 7 days
+        # aggregate_type = avg
+        # aggregate_interval = 3600
         pass
 
     def monthly(self):
+        # x_label_format = %d
+        # bottom_label_format = %x %X
+        # time_length = 2592000    # == 30 days
+        # aggregate_type = avg
+        # aggregate_interval = 10800    # == 3 hours
+        # show_daynight = false
         pass
 
     def yearly(self):
+        # x_label_format = %b
+        # bottom_label_format = %x %X
+        # time_length = 31536000    # == 365 days
+        # aggregate_type = avg
+        # aggregate_interval = 86400
+        # show_daynight = false
         pass
 
 if __name__ == '__main__':
