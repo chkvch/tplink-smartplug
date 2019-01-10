@@ -12,5 +12,5 @@ for ip in ('192.168.1.112', '192.168.1.113'):
         f.write('current,voltage,power,total\n')
         for stamp in sorted(list(log)):
             data = log[stamp]
-            line = '{},{},{},{}\n'.format(data['current'], data['voltage'], data['power'], data['total'])
+            line = '{},{},{},{},{}\n'.format(stamp, data['current'], data['voltage'], data['power'], data['total'])
             f.write(line)
