@@ -8,38 +8,38 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 from spcollector import logdbg
-from datetime import datetime
+import time
 
 class reporter:
 
-    def __init__(self, ip):
-        inpath = '{}/smartplug_{}.pkl'.format(os.environ['HOME'], address)
-        with open(inpath, 'rb') as f:
-            log = pickle.load(f)
-
+    def __init__(self, ips=('192.168.1.113', '192.168.1.112')):
         self.history = {}
-        for stamp in sorted(list(log)):
-            for key in list(log[stamp]):
-                if not key in list(self.history):
-                    self.history[key] = np.array([])
-                self.history[key] = np.append(self.history[key], float(log[stamp][key]))
+        for ip in ips:
+            inpath = '{}/smartplug_{}.pkl'.format(os.environ['HOME'], ip)
+            with open(inpath, 'rb') as f:
+                log = pickle.load(f)
 
-        self.history['time'] = np.array(sorted(list(log)))
+            self.history[ip] = {}
+            self.history[ip]['time'] = np.array(sorted(list(log)))
+            for stamp in sorted(list(log)):
+                for key in list(log[stamp]):
+                    if not key in list(self.history[ip]):
+                        self.history[ip][key] = np.array([])
+                    self.history[ip][key] = np.append(self.history[ip][key], float(log[stamp][key]))
 
-        from scipy.integrate import cumtrapz
-        int_p_dt = cumtrapz(self.history['power'], x=self.history['time'], initial=0.) / 3600. / 1e3
-        self.history['integrated_power'] = int_p_dt
+            from scipy.integrate import cumtrapz
+            int_p_dt = cumtrapz(self.history[ip]['power'], x=self.history[ip]['time'], initial=0.) / 3600. / 1e3
+            self.history[ip]['integrated_power'] = int_p_dt
 
-        self.label = {
+        self.labels = {
             'current':r'Current (A)',
             'voltage':r'Voltage (V)',
             'power':r'Power (W)',
-            'total':r'Energy (kWh)',
-            'time':r'Time (Unix)'
+            'total':r'Energy (kWh)'
         }
 
         assert 'POWER_HTML_ROOT' in list(os.environ), 'must set POWER_HTML_ROOT'
-        self.outdir = os.environ['POWER_HTML_ROOT']
+        self.htmldir = os.environ['POWER_HTML_ROOT']
         self.ip = ip
 
     def daily(self):
@@ -49,44 +49,55 @@ class reporter:
         # time_length = 97200    # == 27 hours
 
         fig, ax = plt.subplots(4, 1, figsize=(15, 10), sharex=True)
-
-        window = 97200
-        mask = self.history['time'][-1] - self.history['time'] < window
-
         kwargs = {'linestyle':'-', 'lw':1, 'marker':'o', 'markersize':2}
-        ax[0].plot(self.history['time'][mask], self.history['current'][mask], **kwargs)
-        ax[1].plot(self.history['time'][mask], self.history['voltage'][mask], **kwargs)
-        ax[2].plot(self.history['time'][mask], self.history['power'][mask], **kwargs)
-        ax[3].plot(self.history['time'][mask], self.history['total'][mask] - self.history['total'][0], **kwargs)
-        ax[3].plot(self.history['time'][mask], self.history['integrated_power'][mask], **kwargs)
+        window = 97200
 
-        ax[0].set_ylabel(self.label['current'])
-        ax[1].set_ylabel(self.label['voltage'])
-        ax[2].set_ylabel(self.label['power'])
-        ax[3].set_ylabel(self.label['total'])
-        ax[-1].set_xlabel(self.label['time'])
+        for ip, log in self.history.items():
+            mask = log['time'][-1] - log['time'] < window
+            alias = {'192.168.1.113':'Ground Floor', '192.168.1.112':'Attic'}[ip]
+            kwargs['label'] = alias
 
-        # # minus 8 converts to PST
-        # time0 = datetime.utcfromtimestamp(int(self.history['time'][0]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
-        # time1 = datetime.utcfromtimestamp(int(self.history['time'][-1]) - 8 * 3600).strftime('%m/%d/%Y %H:%M:%S')
-        #
-        try:
-            description = {'192.168.1.113':'First floor furnace', '192.168.1.112':'Attic furnace'}[self.ip]
-            alias = {'192.168.1.113':'GroundFloor', '192.168.1.112':'Attic'}[self.ip]
-        except KeyError:
-            description = alias = 'undefined'
-        #
-        # info = '{}: {} records from {} to {}'.format(description, len(self.history['time']), time0, time1)
-        # print(info)
-        # logdbg(info)
-        #
-        ax[0].set_title('{}, last 27 hours'.format(description))
+            info = '{}: daily: {} records from {} to {}'.format(alias, len(log['time'][mask]),
+                time.strftime('%a, %d %b %Y %H:%M:%S', time.localtime(log['time'][mask][0])),
+                time.strftime('%a, %d %b %Y %H:%M:%S', time.localtime(log['time'][mask][-1]))
+                )
+            print(info)
+            logdbg(info)
 
-        outfile = 'daily_{}.png'.format(alias)
+            ax[0].plot(log['time'][mask], log['current'][mask], **kwargs)
+            ax[1].plot(log['time'][mask], log['voltage'][mask], **kwargs)
+            ax[2].plot(log['time'][mask], log['power'][mask], **kwargs)
+            ax[3].plot(log['time'][mask], log['total'][mask] - log['total'][0], **kwargs)
+            # ax[3].plot(log['time'][mask], log['integrated_power'][mask], **kwargs)
+
+        now = time.time()
+        start = now - 27 * 3600
+        # human-readable time ticks every hour
+        ticks = []
+        ticklabels = []
+        first_hour = int(start / 3600.) * 3600.
+        last_hour = int(now / 3600.) * 3600.
+        for hour in np.arange(first_hour, last_hour, 3600.)[::3]:
+            ticks.append(hour) # unix timestamp on the hour
+            ticklabels.append(time.strftime('%I %p', time.localtime(hour)))
+
+        ax[-1].xaxis.set_ticklabels(ticklabels)
+        ax[-1].xaxis.set_ticks(ticks)
+        ax[-1].set_xlim(start, now) # only need apply to one axis because of sharex=True in subplots
+
+        ax[0].set_ylabel(self.labels['current'])
+        ax[1].set_ylabel(self.labels['voltage'])
+        ax[2].set_ylabel(self.labels['power'])
+        ax[3].set_ylabel(self.labels['total'])
+        ax[-1].set_xlabel(time.strftime('%I:%M %p', time.localtime(now)))
+
+        ax[-1].legend()
+
+        outfile = 'daily.png'
         plt.savefig(outfile, bbox_inches='tight')
 
-        os.system('sudo cp {} {}/daily_{}.png'.format(outfile, self.outdir, alias))
-        os.system('sudo touch {}/index.html'.format(self.outdir))
+        os.system('sudo cp {} {}/daily.png'.format(outfile, self.htmldir))
+        os.system('sudo touch {}/index.html'.format(self.htmldir))
 
     def weekly(self):
         # x_label_format = %a %b %d
@@ -115,6 +126,5 @@ class reporter:
         pass
 
 if __name__ == '__main__':
-    for address in '192.168.1.112', '192.168.1.113':
-        r = reporter(address)
-        r.daily()
+    r = reporter()
+    r.daily()
