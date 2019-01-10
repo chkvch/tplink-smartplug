@@ -83,7 +83,7 @@ class reporter:
         ticklabels = []
         first_hour = int(start / 3600.) * 3600.
         last_hour = int(now / 3600.) * 3600.
-        for hour in np.arange(first_hour, last_hour, 3600.)[::3]:
+        for hour in np.arange(first_hour, last_hour + 3600., 3600.)[::3]:
             ticks.append(hour) # unix timestamp on the hour
             ticklabels.append(time.strftime('%I %p', time.localtime(hour)))
 
