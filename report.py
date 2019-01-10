@@ -81,14 +81,18 @@ class reporter:
         # human-readable time ticks every hour
         ticks = []
         ticklabels = []
+        minorticks = []
         first_hour = int(start / 3600.) * 3600.
         last_hour = int(now / 3600.) * 3600.
         for hour in np.arange(first_hour, last_hour + 3600., 3600.)[::3]:
             ticks.append(hour) # unix timestamp on the hour
             ticklabels.append(time.strftime('%I %p', time.localtime(hour)))
+        for hour in np.arange(first_hour, last_hour + 3600., 3600.):
+            minorticks.append(hour)
 
         ax[-1].xaxis.set_ticklabels(ticklabels)
         ax[-1].xaxis.set_ticks(ticks)
+        ax[-1].xaxis.set_ticks(minorticks, minor=True)
         ax[-1].set_xlim(start, now) # only need apply to one axis because of sharex=True in subplots
 
         ax[0].set_ylabel(self.labels['current'])
