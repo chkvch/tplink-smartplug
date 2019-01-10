@@ -73,7 +73,7 @@ class reporter:
             x_title = {'192.168.1.113':0.49, '192.168.1.112':0.51}[ip]
             ha = {'192.168.1.113':'right', '192.168.1.112':'left'}[ip]
 
-            fig.text(x_title, 0.9, alias, color=c.get_color(), transform=fig.transFigure,
+            ax[0].text(x_title, 1., alias, color=c.get_color(), transform=ax[0].transAxes,
                 va='bottom', fontsize=24, ha=ha)
 
         now = time.time()
