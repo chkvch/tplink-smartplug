@@ -67,8 +67,14 @@ class reporter:
             ax[0].plot(log['time'][mask], log['current'][mask], **kwargs)
             ax[1].plot(log['time'][mask], log['voltage'][mask], **kwargs)
             ax[2].plot(log['time'][mask], log['power'][mask], **kwargs)
-            ax[3].plot(log['time'][mask], log['total'][mask] - log['total'][0], **kwargs)
+            c, = ax[3].plot(log['time'][mask], log['total'][mask] - log['total'][0], **kwargs)
             # ax[3].plot(log['time'][mask], log['integrated_power'][mask], **kwargs)
+
+            x_title = {'192.168.1.113':0.49, '192.168.1.112':0.51}[ip]
+            ha = {'192.168.1.113':'right', '192.168.1.112':'left'}[ip]
+
+            fig.text(x_title, 0.9, alias, color=c.get_color(), transform=fig.transFigure,
+                va='bottom', fontsize=24, ha=ha)
 
         now = time.time()
         start = now - 27 * 3600
@@ -91,7 +97,7 @@ class reporter:
         ax[3].set_ylabel(self.labels['total'])
         ax[-1].set_xlabel(time.strftime('%I:%M %p', time.localtime(now)))
 
-        ax[-1].legend()
+        # ax[-1].legend()
 
         outfile = 'daily.png'
         plt.savefig(outfile, bbox_inches='tight')
