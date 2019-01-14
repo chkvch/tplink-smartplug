@@ -120,9 +120,12 @@ class reporter:
         outfile = 'daypower.png'
         plt.savefig(outfile, bbox_inches='tight')
 
-        os.system('sudo cp {} {}/daypower.png'.format(outfile, self.htmldir))
-	os.system('sudo cp {0}/index.html {0}/index.html.tmp'.format(self.htmldir)) # touch index.html so that browser will reload
-	os.system('sudo mv {0}/index.html.tmp {0}/index.html'.format(self.htmldir)) # touch index.html so that browser will reload
+        stamp = int(time.time())
+        os.system('sudo cp {} {}/daypower_{}.png'.format(outfile, self.htmldir, stamp))
+        replace_img_embed(outfile, stamp)
+
+	# os.system('sudo cp {0}/index.html {0}/index.html.tmp'.format(self.htmldir)) # touch index.html so that browser will reload
+	# os.system('sudo mv {0}/index.html.tmp {0}/index.html'.format(self.htmldir)) # touch index.html so that browser will reload
 
     def weekly(self):
         # x_label_format = %a %b %d
@@ -149,6 +152,23 @@ class reporter:
         # aggregate_interval = 86400
         # show_daynight = false
         pass
+
+def replace_img_embed(tag='daypower.png', stamp):
+    os.system('sudo cp {0}/index.html {0}/index.html.tmp'.format(os.environ['POWER_HTML_ROOT']))
+    with open('{}/index.html'.format(os.environ['POWER_HTML_ROOT']), 'w') as fw:
+        with open('{}/index.html.tmp'.format(os.environ['POWER_HTML_ROOT']), 'r') as fr:
+            for line in fr.readlines():
+                if not 'daypower' , line:
+                    fw.write('{}\n'.format(line))
+                else:
+                    contents = line.split()
+                    contents[1] = 'src="daypower_{}.png"'.format(stamp)
+                    out = ''
+                    for element in contents:
+                        out += '{} '.format(element)
+                    fw.write('{}\n'.format(out))
+
+    os.system('sudo mv {0}/index.html.tmp {0}/index.html'.format(os.environ['POWER_HTML_ROOT']))
 
 if __name__ == '__main__':
     r = reporter()
