@@ -1,4 +1,4 @@
 *.pyc
-smartplug_*.pkl
 .ipynb_checkpoints
 *.ipynb
+daypower.png

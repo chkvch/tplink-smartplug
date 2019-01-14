@@ -121,7 +121,8 @@ class reporter:
         plt.savefig(outfile, bbox_inches='tight')
 
         os.system('sudo cp {} {}/daypower.png'.format(outfile, self.htmldir))
-	os.system('sudo touch {}/index.html'.format(self.htmldir)) # touch index.html so that browser will reload
+	os.system('sudo cp {0}/index.html {0}/index.html.tmp'.format(self.htmldir)) # touch index.html so that browser will reload
+	os.system('sudo mv {0}/index.html.tmp {0}/index.html'.format(self.htmldir)) # touch index.html so that browser will reload
 
     def weekly(self):
         # x_label_format = %a %b %d
