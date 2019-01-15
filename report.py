@@ -39,8 +39,7 @@ class reporter:
             'total':r'Energy (kWh)'
         }
 
-        assert 'POWER_HTML_ROOT' in list(os.environ), 'must set POWER_HTML_ROOT'
-        self.htmldir = os.environ['POWER_HTML_ROOT']
+        self.htmldir = '/var/www/html/power'
         self.ip = ip
 
 	# various cosmetics to get closer to the weewx plot style; see /etc/weewx/skin.conf
@@ -56,7 +55,7 @@ class reporter:
         # bottom_label_format = %x %X
         # time_length = 97200    # == 27 hours
 
-        fig, ax = plt.subplots(4, 1, figsize=(16, 12), sharex=True)
+        fig, ax = plt.subplots(3, 1, figsize=(16, 12), sharex=True)
         kwargs = {'linestyle':'-', 'lw':2}
         window = 97200
 
@@ -73,10 +72,10 @@ class reporter:
             logdbg(info)
 
             kwargs['color'] = self.chart_line_colors[i]
-            ax[0].plot(log['time'][mask], log['current'][mask], **kwargs)
-            ax[1].plot(log['time'][mask], log['voltage'][mask], **kwargs)
-            ax[2].plot(log['time'][mask], log['power'][mask], **kwargs)
-            ax[3].plot(log['time'][mask], log['total'][mask] - log['total'][mask][0], **kwargs) # subtracting off value at beginning of plot
+            #ax[0].plot(log['time'][mask], log['current'][mask], **kwargs)
+            ax[0].plot(log['time'][mask], log['voltage'][mask], **kwargs)
+            ax[1].plot(log['time'][mask], log['power'][mask], **kwargs)
+            ax[2].plot(log['time'][mask], log['total'][mask] - log['total'][mask][0], **kwargs) # subtracting off value at beginning of plot
             # ax[3].plot(log['time'][mask], log['integrated_power'][mask], **kwargs)
 
             x_title = {'192.168.1.113':0.49, '192.168.1.112':0.51}[ip]
@@ -105,10 +104,10 @@ class reporter:
         ax[-1].xaxis.set_ticks(minorticks, minor=True)
         ax[-1].set_xlim(start, now) # only need apply to one axis because of sharex=True in subplots
 
-        ax[0].set_ylabel(self.labels['current'], **kw)
-        ax[1].set_ylabel(self.labels['voltage'], **kw)
-        ax[2].set_ylabel(self.labels['power'], **kw)
-        ax[3].set_ylabel(self.labels['total'], **kw)
+        #ax[0].set_ylabel(self.labels['current'], **kw)
+        ax[0].set_ylabel(self.labels['voltage'], **kw)
+        ax[1].set_ylabel(self.labels['power'], **kw)
+        ax[2].set_ylabel(self.labels['total'], **kw)
         ax[-1].set_xlabel(time.strftime('%x %I:%M %p', time.localtime(now)), **kw)
 
 	for z in ax:
@@ -153,8 +152,8 @@ class reporter:
         # show_daynight = false
         pass
 
-def update_html(tag, stamp):
-    old = '{}/index.html'.format(os.environ['POWER_HTML_ROOT'])
+def update_html(tag, stamp, html_dir='/var/www/html/power'):
+    old = '{}/index.html'.format(html_dir)
     new = '{}/index.html.tmp'.format(os.environ['HOME'])
     os.system('cp {} {}'.format(old, new))
     with open(new, 'w') as fw:
@@ -162,26 +161,33 @@ def update_html(tag, stamp):
             for line in fr.readlines():
                 if not line.split(): # empty
                     continue
-                if not 'daypower' in line:
-                    fw.write('{}'.format(line))
-                else:
+                if 'daypower' in line:
                     contents = line.split()
                     contents[1] = 'src="daypower_{}.png"'.format(stamp)
                     out = ''
                     for element in contents:
                         out += '{} '.format(element)
-                    fw.write('{}'.format(out))
+                    fw.write('{}\n'.format(out))
+		elif '<!--$current.dateTime-->' in line:
+			chunks = line.split('-->')
+			chunks[-1] = time.strftime('%m/%d/%Y %I:%M:%S %p', time.localtime())
+			out = ''
+			out += '{}-->'.format(chunks[0])
+			out += chunks[1]
+			fw.write('{}\n'.format(out))
+		else:
+			fw.write('{}\n'.format(line))
 
     os.system('sudo mv {} {}'.format(new, old))
 
     # purge old versions of this figure
-    for item in os.listdir(os.environ['POWER_HTML_ROOT']):
+    for item in os.listdir(html_dir):
         if 'daypower' in item:
             if item == '{}.png'.format(tag):
-                os.system('sudo rm {}/{}'.format(os.environ['POWER_HTML_ROOT'], item))
+                os.system('sudo rm {}/{}'.format(html_dir, item))
             else:
                 if int(item.split('_')[1].split('.')[0]) < stamp:
-                    os.system('sudo rm {}/{}'.format(os.environ['POWER_HTML_ROOT'], item))
+                    os.system('sudo rm {}/{}'.format(html_dir, item))
 
 if __name__ == '__main__':
     r = reporter()
