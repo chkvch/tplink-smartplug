@@ -156,7 +156,7 @@ class reporter:
 def update_html(tag, stamp):
     old = '{}/index.html'.format(os.environ['POWER_HTML_ROOT'])
     new = '{}/index.html.tmp'.format(os.environ['HOME'])
-    os.system('sudo cp {} {}'.format(old, new))
+    os.system('cp {} {}'.format(old, new))
     with open(new, 'w') as fw:
         with open(old, 'r') as fr:
             for line in fr.readlines():
@@ -165,7 +165,7 @@ def update_html(tag, stamp):
                 else:
                     contents = line.split()
                     contents[1] = 'src="daypower_{}.png"'.format(stamp)
-                    out = ''
+                    out = '\t'
                     for element in contents:
                         out += '{} '.format(element)
                     fw.write('{}\n'.format(out))
