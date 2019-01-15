@@ -153,10 +153,12 @@ class reporter:
         # show_daynight = false
         pass
 
-def update_html(tag='daypower.png', stamp):
-    os.system('sudo cp {0}/index.html {0}/index.html.tmp'.format(os.environ['POWER_HTML_ROOT']))
-    with open('{}/index.html'.format(os.environ['POWER_HTML_ROOT']), 'w') as fw:
-        with open('{}/index.html.tmp'.format(os.environ['POWER_HTML_ROOT']), 'r') as fr:
+def update_html(tag, stamp):
+    old = '{}/index.html'.format(os.environ['POWER_HTML_ROOT'])
+    new = '{}/index.html.tmp'.format(os.environ['HOME'])
+    os.system('sudo cp {} {}'.format(old, new))
+    with open(new, 'w') as fw:
+        with open(old, 'r') as fr:
             for line in fr.readlines():
                 if not 'daypower' in line:
                     fw.write('{}\n'.format(line))
@@ -168,11 +170,12 @@ def update_html(tag='daypower.png', stamp):
                         out += '{} '.format(element)
                     fw.write('{}\n'.format(out))
 
-    os.system('sudo mv {0}/index.html.tmp {0}/index.html'.format(os.environ['POWER_HTML_ROOT']))
+    os.system('sudo mv {} {}'.format(new, old))
 
+    # purge old versions of this figure
     for item in os.listdir(os.environ['POWER_HTML_ROOT']):
         if 'daypower' in item:
-            if item == 'daypower.png':
+            if item == '{}.png'.format(tag):
                 os.system('sudo rm {}/{}'.format(os.environ['POWER_HTML_ROOT'], item))
             else:
                 if int(item.split('_')[1].split('.')[0]) < stamp:
