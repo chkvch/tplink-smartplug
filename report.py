@@ -122,7 +122,7 @@ class reporter:
 
         stamp = int(time.time())
         os.system('sudo cp {} {}/daypower_{}.png'.format(outfile, self.htmldir, stamp))
-        replace_img_embed(outfile, stamp)
+        update_html(outfile, stamp)
 
 	# os.system('sudo cp {0}/index.html {0}/index.html.tmp'.format(self.htmldir)) # touch index.html so that browser will reload
 	# os.system('sudo mv {0}/index.html.tmp {0}/index.html'.format(self.htmldir)) # touch index.html so that browser will reload
@@ -153,12 +153,12 @@ class reporter:
         # show_daynight = false
         pass
 
-def replace_img_embed(tag='daypower.png', stamp):
+def update_html(tag='daypower.png', stamp):
     os.system('sudo cp {0}/index.html {0}/index.html.tmp'.format(os.environ['POWER_HTML_ROOT']))
     with open('{}/index.html'.format(os.environ['POWER_HTML_ROOT']), 'w') as fw:
         with open('{}/index.html.tmp'.format(os.environ['POWER_HTML_ROOT']), 'r') as fr:
             for line in fr.readlines():
-                if not 'daypower' , line:
+                if not 'daypower' in line:
                     fw.write('{}\n'.format(line))
                 else:
                     contents = line.split()
@@ -169,6 +169,14 @@ def replace_img_embed(tag='daypower.png', stamp):
                     fw.write('{}\n'.format(out))
 
     os.system('sudo mv {0}/index.html.tmp {0}/index.html'.format(os.environ['POWER_HTML_ROOT']))
+
+    for item in os.listdir(os.environ['POWER_HTML_ROOT']):
+        if 'daypower' in item:
+            if item == 'daypower.png':
+                os.system('sudo rm {}/{}'.format(os.environ['POWER_HTML_ROOT'], item))
+            else:
+                if int(item.split('_')[1].split('.')[0]) < stamp:
+                    os.system('sudo rm {}/{}'.format(os.environ['POWER_HTML_ROOT'], item))
 
 if __name__ == '__main__':
     r = reporter()
