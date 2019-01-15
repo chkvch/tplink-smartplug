@@ -160,15 +160,17 @@ def update_html(tag, stamp):
     with open(new, 'w') as fw:
         with open(old, 'r') as fr:
             for line in fr.readlines():
+                if not line.split(): # empty
+                    continue
                 if not 'daypower' in line:
-                    fw.write('{}\n'.format(line))
+                    fw.write('{}'.format(line))
                 else:
                     contents = line.split()
                     contents[1] = 'src="daypower_{}.png"'.format(stamp)
-                    out = '\t'
+                    out = ''
                     for element in contents:
                         out += '{} '.format(element)
-                    fw.write('{}\n'.format(out))
+                    fw.write('{}'.format(out))
 
     os.system('sudo mv {} {}'.format(new, old))
 
