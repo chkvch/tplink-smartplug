@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import spcollector
+import collector
 import time
 import pickle
 import os
@@ -8,11 +8,11 @@ targets = '192.168.1.113','192.168.1.112'
 
 for target in targets:
     try:
-        sp = spcollector.smartplug(target)
+        sp = collector.smartplug(target)
         energy_ = sp.do('energy') # str
         #info_ = sp.do('info') # str
     except ValueError, e:
-        spcollector.logerr(str(e))
+        collector.logerr(str(e))
         continue
 
     current = energy_.split('current')[1].split('voltage')[0][2:-2]
