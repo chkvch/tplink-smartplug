@@ -5,7 +5,7 @@ import threading
 import syslog
 
 def logmsg(level, msg):
-    syslog.syslog(level, 'spcollector: {}: {}'.format(threading.currentThread().getName(), msg))
+    syslog.syslog(level, 'collector: {}: {}'.format(threading.currentThread().getName(), msg))
 
 def logdbg(msg):
     logmsg(syslog.LOG_DEBUG, msg)
@@ -31,7 +31,7 @@ def encrypt(string):
 	for i in string:
 		a = key ^ ord(i)
 		key = a
-		result += chr(a)
+		result += chr(a).encode('latin1')
 	return result
 
 def decrypt(string):
@@ -56,6 +56,7 @@ class smartplug:
 					'on'       : '{"system":{"set_relay_state":{"state":1}}}',
 					'off'      : '{"system":{"set_relay_state":{"state":0}}}',
 					'cloudinfo': '{"cnCloud":{"get_info":{}}}',
+                    'cloudoff' : '{"cnCloud":{"unbind":null}}',
 					'wlanscan' : '{"netif":{"get_scaninfo":{"refresh":0}}}',
 					'time'     : '{"time":{"get_time":{}}}',
 					'schedule' : '{"schedule":{"get_rules":{}}}',
@@ -63,7 +64,7 @@ class smartplug:
 					'antitheft': '{"anti_theft":{"get_rules":{}}}',
 					'reboot'   : '{"system":{"reboot":{"delay":1}}}',
 					'reset'    : '{"system":{"reset":{"delay":1}}}',
-					'energy'   : '{"emeter":{"get_realtime":{}}}'
+					'energy'   : '{"emeter":{"get_realtime":{}}}',
 		}
 
 
@@ -80,7 +81,7 @@ class smartplug:
 			data = sock_tcp.recv(2048)
 			sock_tcp.close()
 
-			result = decrypt(data[4:])
+			result = decrypt(data[4:].decode('latin1'))
 
 			logdbg("Sent:     {}".format(command))
 			logdbg("Received: {}".format(result))
